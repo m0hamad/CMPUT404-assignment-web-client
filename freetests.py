@@ -43,7 +43,7 @@ class MyHTTPHandler(http.server.BaseHTTPRequestHandler):
             if (self.post == None):
                 return None
             else:
-                return self.post()
+                return self.post
         except Exception as e:
             print("Exception %s\n" % e)
             raise e
@@ -54,7 +54,7 @@ class MyHTTPHandler(http.server.BaseHTTPRequestHandler):
             if (self.get == None):
                 return None
             else:
-                return self.get()
+                return self.get
         except Exception as e:
             print("Exception %s\n" % e)
             raise e
@@ -120,9 +120,6 @@ def post_header_check(self):
     self.end_headers()
     self.wfile.write(json.dumps(errors))
 
-
-
-
 class TestHTTPClient(unittest.TestCase):
     httpd = None
     running = False
@@ -132,7 +129,7 @@ class TestHTTPClient(unittest.TestCase):
         '''Cache the httpd server and run it as a thread'''
         if (TestHTTPClient.httpd == None):
             try:
-                self.thread = threading.Thread(target=self.run_server).start()
+                threading.Thread(target=self.run_server).start()
                 time.sleep(1)
             except Exception as e:
                 print(e)
