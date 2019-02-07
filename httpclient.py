@@ -18,6 +18,7 @@
 # Write your own HTTP GET and POST
 # The point is to understand what you have to send and get experience with it
 
+from freetests import BASEPORT
 import random
 import re
 import sys
@@ -88,7 +89,8 @@ class HTTPClient(object):
             return 443
 
         else:
-            return 27600 + random.randint(1,100)
+
+            return BASEPORT
 
     def get_request(self, hostname, path, query, method):
 
