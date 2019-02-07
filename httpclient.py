@@ -27,6 +27,7 @@ import socket
 import urllib.parse
 
 def help():
+
     print("httpclient.py [GET/POST] [URL]\n")
 
 class HTTPResponse(object):
@@ -47,11 +48,39 @@ class HTTPClient(object):
 
         self.socket.close()
 
+    def command(self, url, command = "GET", args = None):
+
+        if (command == "POST"):
+
+            return self.POST(url, args)
+
+        else:
+
+            return self.GET(url, args)
+
     # Connect to a remote socket at address.
     def connect(self, host, port):
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((host, port))
+
+    def GET(self, url, args = None):
+
+        hostname, port, path = self.parse_url(url)
+
+        self.connect(hostname, port)
+
+        request = self.get_request(hostname, path, "", "GET ")
+
+        self.sendall(request)
+
+        data = self.recvall(self.socket)
+        status_code = self.get_code(data)
+        content = self.get_body(data)
+
+        self.close()
+        
+        return HTTPResponse(status_code, content)
 
     def get_body(self, data):
 
@@ -70,13 +99,13 @@ class HTTPClient(object):
 
         try:
 
-            code = int(data.split(" ")[1])
+            status_code = int(data.split(" ")[1])
 
         except:
 
-            code = 400
+            status_code = 400
 
-        return code
+        return status_code
 
     def get_port(self, port, scheme):
 
@@ -91,6 +120,21 @@ class HTTPClient(object):
         else:
 
             return BASEPORT
+
+    # Tranform dictionary into key and value lists.
+    def get_query(self, args):
+
+        keys = list(args.keys())
+        values = list(args.values())
+        query = ''
+        
+        for i in range(len(keys)):
+
+            query += keys[i] + '=' + values[i] + '&'
+            
+        query = query[:-1]
+
+        return query
 
     def get_request(self, hostname, path, query, method):
 
@@ -118,22 +162,6 @@ class HTTPClient(object):
             connection = "Connection: close\r\n\r\n"
 
             return method + host + connection
-    
-    # Tranform dictionary into key and value lists.
-    def get_query(self, args):
-
-        keys = list(args.keys())
-        values = list(args.values())
-        
-        query = ''
-        
-        for i in range(len(keys)):
-
-            query += keys[i] + '=' + values[i] + '&'
-            
-        query = query[:-1]
-
-        return query
 
     # https://docs.python.org/3/library/urllib.parse.html#url-parsing
     def parse_url(self, url):
@@ -145,13 +173,39 @@ class HTTPClient(object):
         path = parsedURL.path
         
         if path == "":
+
             path = "/"
 
         if port == None:
 
             port = self.get_port(port, scheme)
 
-        return scheme, hostname, port, path
+        return hostname, port, path
+
+    def POST(self, url, args = None):
+
+        hostname, port, path = self.parse_url(url)
+
+        self.connect(hostname, port)
+        
+        if (args != None):
+
+            query = self.get_query(args)
+            request = self.get_request(hostname, path, query, "POST ")
+
+        else:
+            
+            request = self.get_request(hostname, path, "", "POST ")
+    
+        self.sendall(request)
+
+        data = self.recvall(self.socket)
+        status_code = self.get_code(data)
+        content = self.get_body(data)
+
+        self.close()        
+
+        return HTTPResponse(status_code, content)
 
     # Read everything from the socket.
     def recvall(self, sock):
@@ -177,59 +231,6 @@ class HTTPClient(object):
     def sendall(self, data):
 
         self.socket.sendall(data.encode('utf-8'))
-
-    def GET(self, url, args = None):
-
-        scheme, hostname, port, path = self.parse_url(url)
-
-        self.connect(hostname, port)
-
-        request = self.get_request(hostname, path, "", "GET ")
-
-        self.sendall(request)
-
-        data = self.recvall(self.socket)
-        status_code = self.get_code(data)
-        content = self.get_body(data)
-
-        self.close()
-        
-        return HTTPResponse(status_code, content)
-
-    def POST(self, url, args = None):
-
-        scheme, hostname, port, path = self.parse_url(url)
-
-        self.connect(hostname, port)
-        
-        if (args != None):
-
-            query = self.get_query(args)
-            request = self.get_request(hostname, path, query, "POST ")
-
-        else:
-            
-            request = self.get_request(hostname, path, "", "POST ")
-    
-        self.sendall(request)
-
-        data = self.recvall(self.socket)
-        status_code = self.get_code(data)
-        content = self.get_body(data)
-
-        self.close()        
-
-        return HTTPResponse(status_code, content)
-
-    def command(self, url, command = "GET", args = None):
-
-        if (command == "POST"):
-
-            return self.POST(url, args)
-
-        else:
-
-            return self.GET(url, args)
     
 if __name__ == "__main__":
 
