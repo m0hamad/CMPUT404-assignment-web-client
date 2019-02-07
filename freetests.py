@@ -43,7 +43,7 @@ class MyHTTPHandler(http.server.BaseHTTPRequestHandler):
             if (self.post == None):
                 return None
             else:
-                return self.post
+                return self.post()
         except Exception as e:
             print("Exception %s\n" % e)
             raise e
@@ -54,7 +54,7 @@ class MyHTTPHandler(http.server.BaseHTTPRequestHandler):
             if (self.get == None):
                 return None
             else:
-                return self.get
+                return self.get()
         except Exception as e:
             print("Exception %s\n" % e)
             raise e
@@ -66,14 +66,14 @@ def make_http_server(host = BASEHOST, port = BASEPORT):
 def nothing_available(self):
     self.send_error(404, "File not found")
     self.end_headers()
-    self.wfile.write("")
+    self.wfile.write(bytes("","utf-8"))
 
 # repeats your path back
 def echo_path_get(self):
     self.send_response(200)
     self.send_header("Content-type", "text/plain")
     self.end_headers()
-    self.wfile.write("%s\n" % self.path)
+    self.wfile.write(bytes("%s\n" % self.path,"utf-8"))
 
 # repeats your post back as json
 def echo_post(self):
@@ -82,7 +82,7 @@ def echo_post(self):
     self.send_response(200)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(post_data))
+    self.wfile.write(bytes(json.dumps(post_data),"utf-8"))
 
 def header_check(self):
     response = 200
@@ -93,7 +93,7 @@ def header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
 def die_on_method(self):
     response = 405
@@ -104,7 +104,7 @@ def die_on_method(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
 def post_header_check(self):
     response = 200
@@ -118,7 +118,10 @@ def post_header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
+
+
+
 
 class TestHTTPClient(unittest.TestCase):
     httpd = None
@@ -129,7 +132,7 @@ class TestHTTPClient(unittest.TestCase):
         '''Cache the httpd server and run it as a thread'''
         if (TestHTTPClient.httpd == None):
             try:
-                threading.Thread(target=self.run_server).start()
+                self.thread = threading.Thread(target=self.run_server).start()
                 time.sleep(1)
             except Exception as e:
                 print(e)
@@ -199,7 +202,7 @@ class TestHTTPClient(unittest.TestCase):
         url = "http://%s:%d/%s" % (BASEHOST,BASEPORT, path)
         req = http.POST( url )
         self.assertTrue(req != None, "None Returned!")
-        self.assertTrue(req.code == 200)
+        self.assertTrue(req.code == 200,"Code is %s but I wanted a 200 OK" % req.code)
 
         
         
@@ -245,7 +248,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.POST( url, args=args )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
-        print("Body: [%s]" % req.body)
+        print("Test Post Body: [%s]" % req.body)
         outargs = json.loads(req.body)
         print(outargs.__class__)
         for key in args:
