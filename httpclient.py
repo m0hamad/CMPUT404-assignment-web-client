@@ -74,7 +74,7 @@ class HTTPClient(object):
 
         self.sendall(request)
 
-        data = self.recvall(self.socket)
+        data = self.recvall()
         status_code = self.get_code(data)
         content = self.get_body(data)
 
@@ -190,7 +190,8 @@ class HTTPClient(object):
         
         if (args != None):
 
-            query = self.get_query(args)
+            # query = self.get_query(args)
+            query = urllib.parse.urlencode(args)
             request = self.get_request(hostname, path, query, "POST ")
 
         else:
@@ -199,7 +200,7 @@ class HTTPClient(object):
     
         self.sendall(request)
 
-        data = self.recvall(self.socket)
+        data = self.recvall()
         status_code = self.get_code(data)
         content = self.get_body(data)
 
@@ -208,14 +209,14 @@ class HTTPClient(object):
         return HTTPResponse(status_code, content)
 
     # Read everything from the socket.
-    def recvall(self, sock):
+    def recvall(self):
 
         buffer = bytearray()
         done = False
 
         while not done:
 
-            part = sock.recv(1024)
+            part = self.socket.recv(1024)
 
             if (part):
 

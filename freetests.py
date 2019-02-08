@@ -29,7 +29,6 @@ import json
 BASEHOST = '127.0.0.1'
 BASEPORT = 27600 + random.randint(1,100)
 
-
 httpclass = httpclient
 #import mysolution
 #httpclass = mysolution
@@ -120,9 +119,6 @@ def post_header_check(self):
     self.end_headers()
     self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
-
-
-
 class TestHTTPClient(unittest.TestCase):
     httpd = None
     running = False
@@ -152,8 +148,6 @@ class TestHTTPClient(unittest.TestCase):
         except Exception as e:
             print(e)
             print("run_server: Thread died")
-
-
 
     def test404GET(self):
         '''Test against 404 errors'''
@@ -203,8 +197,6 @@ class TestHTTPClient(unittest.TestCase):
         req = http.POST( url )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200,"Code is %s but I wanted a 200 OK" % req.code)
-
-        
         
     # consider disabling this test until everything else works
     def testInternetGets(self):
