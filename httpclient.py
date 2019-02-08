@@ -97,15 +97,7 @@ class HTTPClient(object):
     # Get the status code: 2xx, 3xx, 4xx, 5xx
     def get_code(self, data):
 
-        try:
-
-            status_code = int(data.split(" ")[1])
-
-        except:
-
-            status_code = 400
-
-        return status_code
+        return int(data.split(" ")[1])
 
     def get_port(self, port, scheme):
 
@@ -120,21 +112,6 @@ class HTTPClient(object):
         else:
 
             return BASEPORT
-
-    # Tranform dictionary into key and value lists.
-    def get_query(self, args):
-
-        keys = list(args.keys())
-        values = list(args.values())
-        query = ''
-        
-        for i in range(len(keys)):
-
-            query += keys[i] + '=' + values[i] + '&'
-            
-        query = query[:-1]
-
-        return query
 
     def get_request(self, hostname, path, query, method):
 
@@ -203,6 +180,8 @@ class HTTPClient(object):
         data = self.recvall()
         status_code = self.get_code(data)
         content = self.get_body(data)
+
+        print(content)
 
         self.close()        
 
